@@ -1,26 +1,30 @@
-import urllib2
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+from urllib import request, error
 from eureka import __version__ as client_version
-import gzip
-import StringIO
 
 
 class EurekaHTTPException(Exception):
     pass
 
 
-class Request(urllib2.Request):
+class Request(request.Request):
     """
-    Instead of requiring a version of `requests`, we use this easy wrapper around urllib2 to avoud possible
-    version conflicts with people own software.
+    Utility wrapper around urllib.Request
+
+    Instead of requiring a version of `requests`, we use this easy wrapper
+    around urllib2 to avoud possible version conflicts with people own
+    software.
     """
     def __init__(self, url, method="GET", data=None, headers=None,
                  origin_req_host=None, unverifiable=False):
         self.method = method
-        self._opener = urllib2.build_opener()
+        self._opener = request.build_opener()
         self._opener.addheaders = [
             ('User-agent', 'python-eureka v%s' % client_version)
         ]
-        urllib2.Request.__init__(self, url, data=data, headers=headers or {},
+        request.Request.__init__(self, url, data=data, headers=headers or {},
                                  origin_req_host=origin_req_host, unverifiable=unverifiable)
 
     def get_method(self):
@@ -32,17 +36,9 @@ class Request(urllib2.Request):
         request = cls(url, method, data=data, headers=headers)
         try:
             response = request._opener.open(request)
-        except urllib2.HTTPError as e:
+        except error.HTTPError as e:
             return Response(e.code, e.read(), url, method)
-
-        content = response.read()
-        info = response.info()
-        if "gzip" in info.get("Content-Encoding", "").lower():
-            data = StringIO.StringIO(content)
-            gzipper = gzip.GzipFile(fileobj=data)
-            content = gzipper.read()
-
-        return Response(response.getcode(), content, url, method)
+        return Response(response.getcode(), response.read(), url, method)
 
 
 class Response(object):

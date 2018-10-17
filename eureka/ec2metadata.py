@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Copyright (c) 2013 Alon Swartz <alon@turnkeylinux.org>
 #
 # This file is part of ec2metadata.
@@ -39,7 +40,7 @@ class EC2Metadata:
                 s.connect((addr, port))
                 s.close()
                 return True
-            except socket.error, e:
+            except socket.error as e:
                 time.sleep(1)
 
         return False
@@ -95,6 +96,6 @@ def display(metaopts, prefix=False):
             value = "unavailable"
 
         if prefix:
-            print "%s: %s" % (metaopt, value)
+            print("%s: %s" % (metaopt, value))
         else:
-            print value
+            print(value)

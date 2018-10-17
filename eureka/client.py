@@ -1,7 +1,11 @@
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import json
 import random
-from urllib2 import URLError
-from urlparse import urljoin
+from urllib.error import URLError
+from urllib.parse import urljoin
 from eureka import requests
 from eureka import ec2metadata
 import logging
@@ -86,7 +90,7 @@ class EurekaClient(object):
             return [self.eureka_url]
         elif self.use_dns:
             zone_dns_map = self.get_zones_from_dns()
-            zones = zone_dns_map.keys()
+            zones = list(zone_dns_map.keys())
             assert len(zones) > 0, "No availability zones found for, please add them explicitly"
             if self.prefer_same_zone:
                 if self.get_instance_zone() in zones:
@@ -204,10 +208,7 @@ class EurekaClient(object):
     def _get_from_any_instance(self, endpoint):
         for eureka_url in self.eureka_urls:
             try:
-                r = requests.get(urljoin(eureka_url, endpoint), headers={
-                    'accept': 'application/json',
-                    'accept-encoding': 'gzip',
-                })
+                r = requests.get(urljoin(eureka_url, endpoint), headers={'accept': 'application/json'})
                 r.raise_for_status()
                 return json.loads(r.content)
             except (EurekaHTTPException, URLError) as e:
